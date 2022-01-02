@@ -39,6 +39,7 @@ public class MainManager : MonoBehaviour
             }
         }
 
+        //This check is here to avoid error in case you load this scene directly, without using the menu
         if (PersistenceManager.instance != null)
         {
             if (PersistenceManager.instance.persistence.Count > 0)
@@ -92,6 +93,7 @@ public class MainManager : MonoBehaviour
         m_GameOver = true;
         GameOverText.SetActive(true);
 
+        //On game over, insert the new score and save
         PersistenceManager.instance.AddNewScore(m_Points);
         PersistenceManager.instance.Save();
     }

@@ -8,16 +8,17 @@ public class PersistenceManager : MonoBehaviour
 {
     public static PersistenceManager instance;
 
+    //Table of high scores ordered by score from max to min
+    [System.NonSerialized]    public Dictionary<string,int> persistence = new Dictionary<string, int>();
 
-    [System.NonSerialized]
-    public Dictionary<string,int> persistence = new Dictionary<string, int>();
-    [System.NonSerialized]
-    public string lastPlayer;
+    //The name of the last player
+    [System.NonSerialized]    public string lastPlayer;
 
-    private const int maxHighScores = 10;
+    private const int maxHighScores = 10;       //number of records stored
 
     private void Awake()
     {
+        //Use a singleton to store the data
         if (instance == null)
         {
             instance = this;
@@ -29,6 +30,9 @@ public class PersistenceManager : MonoBehaviour
         }
     }
 
+
+    //Class used to store the needed data
+    //Dictionary isn't serializable using JsonUtility so I store the name of the player and score in two array
     [System.Serializable]
     class SaveData
     {
@@ -37,6 +41,7 @@ public class PersistenceManager : MonoBehaviour
         public string lastName;
     }
 
+    //Persist data to disk
     public void Save()
     {
         SaveData data = new SaveData();
@@ -61,21 +66,24 @@ public class PersistenceManager : MonoBehaviour
             {
                 persistence.Add(data.name[i], data.score[i]);
             }
-            Debug.Log("last player:" + data.lastName);
+
+            //set loaded values in the PersistenceManager
             lastPlayer = data.lastName;
+            //Order the high scores from max to min
             persistence = persistence.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
         }
     }
 
     public void AddNewScore(int score)
     {
-        //Add to the high score only if the score is greater than the last strored one, or the high score is empty
+        //Add to the high score only if the score is greater than the last strored one, or the high score table isn't full
         if (persistence.Count() < maxHighScores || score > persistence.Values.Last() )
         {
             if (persistence.Count() == maxHighScores)
             {
                 persistence.Remove(persistence.Keys.Last());
             }
+
             if (persistence.ContainsKey(lastPlayer))
             {
                 persistence[lastPlayer] = score;
@@ -84,6 +92,8 @@ public class PersistenceManager : MonoBehaviour
             {
                 persistence.Add(lastPlayer, score);
             }
+
+            //Order the dictionary
             persistence = persistence.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
         }
     }
