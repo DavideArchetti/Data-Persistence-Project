@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,6 +13,7 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public Text bestScoreText;
     
     private bool m_Started = false;
     private int m_Points;
@@ -34,6 +36,18 @@ public class MainManager : MonoBehaviour
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
+            }
+        }
+
+        if (PersistenceManager.instance != null)
+        {
+            if (PersistenceManager.instance.persistence.Count > 0)
+            {
+                bestScoreText.text = $"Best score {PersistenceManager.instance.persistence.Keys.First()} : {PersistenceManager.instance.persistence.Values.First()}";
+            }
+            else
+            {
+                bestScoreText.text = $"Best score {PersistenceManager.instance.lastPlayer} : 0";
             }
         }
     }
@@ -59,6 +73,11 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
+            }
         }
     }
 
@@ -72,5 +91,8 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        PersistenceManager.instance.AddNewScore(m_Points);
+        PersistenceManager.instance.Save();
     }
 }
